@@ -1,0 +1,7 @@
+numpy==2.4.6
+opencv-python==4.11.0.86
+matplotlib==3.11.2
+plantcv==4.11.3
+torch==2.14.0
+pytest==9.1.1
+flake8==7.4.1
