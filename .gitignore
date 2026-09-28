@@ -4,10 +4,23 @@ __pycache__/
 .venv/
 venv/
 
+.pytest_cache/
+
 # Datasets and generated outputs
 images/
 augmented_directory/
+transformed/
+learnings/
 learnings.zip
+learnings.zip.part
+*.pt
+
+# Figures saved when no display is available
+*_distribution.png
+augmentation.png
+transformations.png
+histogram.png
+prediction.png
 
 # IDE / Editor
 .vscode/
