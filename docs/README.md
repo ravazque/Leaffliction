@@ -13,35 +13,97 @@ The pipeline covers four stages, each with its own program:
 
 The trained model and the images it learned from are packaged in `learnings.zip`, and `signature.txt` holds that archive's SHA-1 so the exact artifacts can be verified later.
 
----
-
-## Contents
-
-1. [Setup](#setup)
-2. [Dataset layout](#dataset-layout)
-3. [Usage](#usage)
-4. [Concepts](#concepts)
-5. [Results](#results)
-6. [Testing](#testing)
-7. [Project structure](#project-structure)
-
----
 
 ## Setup
 
-Requirements: **Python 3.13** (the tested version). Python 3.14 is not supported yet: PlantCV pins `scipy<1.16`, which ships no 3.14 wheels. A CUDA GPU is optional; training falls back to the CPU.
+These steps work on any Linux or macOS machine, without root access. Every command is run from the repository root.
+
+### 1. What you need
+
+| Item | Where it comes from |
+|---|---|
+| The code | `git clone <repository URL> Leaffliction && cd Leaffliction` |
+| `images/` | the leaf image dataset, extracted at the repository root so that `images/` holds the 8 class folders. It is not in git. |
+| `learnings.zip` | the archive produced by `train.py`, copied **byte for byte** to the repository root (USB drive, `scp`, cloud storage). It is not in git. Never re-zip or re-compress it: that changes its SHA-1. |
+| Python 3.13 | see below. Python 3.14 is not supported: PlantCV pins `scipy<1.16`, which ships no 3.14 wheels. |
+
+A CUDA GPU is optional: everything runs on the CPU, and only full training is slow there.
+
+### 2. Python 3.13 and the virtual environment
+
+Check the available version with `python3 --version` (or `python3.13 --version`). If Python 3.13 is missing, [uv](https://docs.astral.sh/uv/) installs one in the home directory, without root:
 
 ```bash
-python3.13 -m venv .venv            # or: uv venv --python 3.13 .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+curl -LsSf https://astral.sh/uv/install.sh | sh      # installs ~/.local/bin/uv
 ```
 
-Every command below assumes the virtual environment is active and is run from the repository root.
+Create and activate the environment, with either tool:
+
+```bash
+python3.13 -m venv .venv                  # with an installed Python 3.13
+uv venv --python 3.13 --seed .venv        # or with uv (downloads 3.13 if needed)
+
+source .venv/bin/activate                 # every later command assumes this
+```
+
+The virtual environment must be active in every new terminal (`source .venv/bin/activate`; `deactivate` leaves it).
+
+### 3. Dependencies
+
+Pick the PyTorch build that fits the machine:
+
+```bash
+# Machine with an NVIDIA GPU: CUDA build, about 6 GB
+pip install -r requirements.txt
+
+# Machine without one (or short on disk): CPU build, about 1.5 GB
+pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+```
+
+With a small home quota, create the environment on a larger disk and link it, for example `uv venv --python 3.13 --seed /path/to/big/disk/leaf-venv && ln -s /path/to/big/disk/leaf-venv .venv`.
+
+Check the installation:
+
+```bash
+python -c "import torch, plantcv, cv2; print(torch.__version__, 'CUDA:', torch.cuda.is_available())"
+```
+
+### 4. Verify the learnings
+
+Compare the archive with the signature committed in the repository before using it:
+
+```bash
+sha1sum -c signature.txt                  # Linux:  learnings.zip: OK
+shasum -c signature.txt                   # macOS
+```
+
+`FAILED` means `learnings.zip` is not the archive that was signed: a different training run or a re-compressed copy. Extracting it (`unzip -q learnings.zip`, which creates `learnings/`) leaves the archive untouched, and `predict.py` reads the model straight from the zip anyway.
+
+### 5. Test
+
+```bash
+python -m pytest -q                       # 107 tests, 2-3 minutes, no dataset needed
+flake8 src tests                          # style (PEP 8)
+./src/predict.py learnings/validation     # accuracy of the signed model on 1445 images
+```
+
+See [Testing](#testing) for what each test file covers and a list of manual checks, and [Usage](#usage) for every program.
+
+### 6. Display
 
 Figures open in a window. Without a display (SSH, CI, `MPLBACKEND=Agg`), each figure is saved as a PNG in the current directory instead and its path is printed.
 
----
+### Troubleshooting
+
+| Symptom | Cause and fix |
+|---|---|
+| `No matching distribution found for scipy` / `plantcv` | wrong Python version: use 3.13 |
+| `No space left on device` during `pip install` | use the CPU build, or put the environment on a larger disk (step 3) |
+| Figures are saved as PNG on a desktop | this Python has no `tkinter`: install `python3-tk` (Debian/Ubuntu) or use uv's Python, which includes it |
+| `./src/...py: Permission denied` | `chmod +x src/*.py`, or run `python src/<program>.py` |
+| `ModuleNotFoundError` | the virtual environment is not active: `source .venv/bin/activate` |
+| `learnings: exists and was not created by train.py` | `train.py` refuses to wipe an extracted `learnings/`: run it from another directory, or pass `--workdir`, `--out` and `--signature` |
+
 
 ## Dataset layout
 
@@ -59,7 +121,6 @@ The **plant type** of a class is its parent folder when nested (`Apple/apple_sca
 
 The dataset used here has 7221 RGB images of 256×256 pixels in 8 classes, heavily imbalanced (from 275 `Apple_rust` to 1640 `Apple_healthy`).
 
----
 
 ## Usage
 
@@ -127,7 +188,7 @@ Saved files are named `<name>_<Transformation>.JPG`, plus `<name>_Histogram.png`
 | `--seed` | 7 | seed for the split, augmentation and weights |
 | `--device` | `auto` | `auto`, `cpu`, `cuda`, `cuda:N` |
 
-About 3–4 minutes on a laptop GPU (RTX 4050), mostly spent segmenting the images. The work directory is only deleted if a previous `train.py` run created it.
+About 3 minutes on a laptop GPU (RTX 4050) with a 16-thread CPU: about 15 s to prepare the images, then about 9 s per epoch. The work directory is only deleted if a previous `train.py` run created it.
 
 ### predict
 
@@ -148,7 +209,6 @@ About 3–4 minutes on a laptop GPU (RTX 4050), mostly spent segmenting the imag
 
 `0` success, `1` error (message on stderr, never a traceback), `2` invalid arguments, `130` interrupted with Ctrl-C.
 
----
 
 ## Concepts
 
@@ -273,11 +333,10 @@ shasum -c signature.txt           # macOS
 
 Any change to the archive, even re-zipping the same content, changes the hash. Keep `learnings.zip` untouched after training. Neither the dataset nor the archive belongs in the repository; only `signature.txt` does.
 
----
 
 ## Results
 
-`./src/train.py images/` with the default settings (seed 7, 20 epochs, 128 px), on an RTX 4050 laptop GPU, in 3 min 18 s:
+`./src/train.py images/` with the default settings (seed 7, 20 epochs, 128 px), on an RTX 4050 laptop GPU, in 3 min 14 s:
 
 | Split | Images | Accuracy |
 |---|---|---|
@@ -304,14 +363,13 @@ sha1sum -c signature.txt
 ./src/predict.py learnings/validation
 ```
 
----
 
 ## Testing
 
 ### Automated
 
 ```bash
-python -m pytest -q          # full suite, about 1 minute
+python -m pytest -q          # full suite, 2-3 minutes
 python -m pytest tests/test_cli.py -q
 flake8 src tests             # style (PEP 8)
 ```
@@ -338,12 +396,11 @@ cp "images/Apple_scab/image (12).JPG" /tmp/leaf.JPG
 ./src/Transformation.py "images/Grape_Esca/image (5).JPG"
 ./src/Transformation.py -src images/Apple_rust -dst /tmp/rust -mask -pseudo
 ./src/train.py images/
-./src/predict.py learnings/validation                  # accuracy on ≥ 100 images
+./src/predict.py learnings/validation                  # accuracy on the validation images
 ./src/predict.py "learnings/validation/Grape_spot/$(ls learnings/validation/Grape_spot | head -1)"
 sha1sum -c signature.txt
 ```
 
----
 
 ## Project structure
 
