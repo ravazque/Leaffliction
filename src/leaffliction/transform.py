@@ -77,9 +77,7 @@ def transform(img, names=None):
 
 def save_transformations(job):
     """(image, output dir, names): write '<stem>_<Name>' files.
-
-    Returns None on success, else a message explaining the skip.
-    """
+    Returns None on success, else a message explaining the skip."""
     path, out_dir, names = job
     try:
         img = load_image(path)

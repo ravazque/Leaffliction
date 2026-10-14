@@ -18,9 +18,7 @@ def augmented_name(path, name):
 
 def balance_plan(files, target=None, seed=0):
     """{label: [(original, augmentation)]} filling every class to target.
-
-    Each original gets each augmentation once at most; names never repeat.
-    """
+    Each original gets each augmentation once at most; names never repeat."""
     target = target or max(len(paths) for paths in files.values())
     plan = {}
     for label, paths in files.items():
@@ -40,9 +38,7 @@ def balance_plan(files, target=None, seed=0):
 
 def write_image(job):
     """(source, augmentation or None, output, key, seed): copy or augment.
-
-    Returns None on success, else an error message.
-    """
+    Returns None on success, else an error message."""
     src, name, out, key, seed = job
     try:
         if name is None:

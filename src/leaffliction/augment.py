@@ -1,7 +1,5 @@
 """Six geometric augmentations, each (BGR image, RNG) -> new image.
-
-Uncovered areas take the background colour so the leaf mask ignores them.
-"""
+Uncovered areas take the background colour so the leaf mask ignores them."""
 import zlib
 
 import cv2

@@ -1,7 +1,5 @@
 """Leaf segmentation with PlantCV on the LAB b - a channel (leaf high).
-
-Otsu gives sure leaf; weaker pixels (lesions, glare) join if connected.
-"""
+Otsu gives sure leaf; weaker pixels (lesions, glare) join if connected."""
 from dataclasses import dataclass
 
 import cv2

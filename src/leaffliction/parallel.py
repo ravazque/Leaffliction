@@ -15,9 +15,7 @@ def _init_worker():
 
 def parallel_map(fn, items, label, workers=None):
     """Apply fn to every item across processes; results keep item order.
-
-    fn must be a module-level function so it can be sent to workers.
-    """
+    fn must be a module-level function so it can be sent to workers."""
     items = list(items)
     total = len(items)
     workers = workers or os.cpu_count() or 1

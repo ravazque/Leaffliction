@@ -1,7 +1,5 @@
 """Matplotlib figures used by the programs.
-
-`figure` factory: Figure (default) works headless, pyplot.figure shows it.
-"""
+`figure` factory: Figure (default) works headless, pyplot.figure shows it."""
 import math
 
 from matplotlib.figure import Figure
