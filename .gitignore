@@ -21,6 +21,7 @@ augmentation.png
 transformations.png
 histogram.png
 prediction.png
+!docs/img/*.png
 
 # IDE / Editor
 .vscode/
