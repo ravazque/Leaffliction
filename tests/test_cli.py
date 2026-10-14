@@ -1,7 +1,5 @@
 """End-to-end runs of the five programs, headless, including bad input.
-
-The cli fixture fails any run that prints a Python traceback.
-"""
+The cli fixture fails any run that prints a Python traceback."""
 import os
 import subprocess
 

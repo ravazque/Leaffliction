@@ -101,9 +101,7 @@ def leaf_groups(files):
 
 def split_dataset(classes, val_ratio, seed):
     """Stratified split per leaf: a leaf and its copies stay on one side.
-
-    Validation keeps original images only, so nothing leaks from training.
-    """
+    Validation keeps original images only, so nothing leaks from training."""
     train, val = [], []
     for cls in classes:
         groups = leaf_groups(cls.files)

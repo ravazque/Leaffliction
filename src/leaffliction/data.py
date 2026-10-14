@@ -1,7 +1,5 @@
 """Model inputs: the same leaf-only preprocessing for training and predict.
-
-Jobs return an array, or an error string so one bad file never stops a batch.
-"""
+Jobs return an array or an error string: one bad file never stops a batch."""
 import cv2
 import numpy as np
 

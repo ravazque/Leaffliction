@@ -40,9 +40,7 @@ def _random_flips(x, gen):
 def fit(model, images, labels, device, epochs, batch_size, lr, seed,
         log=print):
     """AdamW with a one-cycle schedule, for a fixed number of epochs.
-
-    images: uint8 tensor N x 3 x S x S, labels: int64 tensor N.
-    """
+    images: uint8 tensor N x 3 x S x S, labels: int64 tensor N."""
     gen = torch.Generator().manual_seed(seed)
     model.to(device).train()
     images, labels = images.to(device), labels.to(device)
