@@ -10,9 +10,9 @@ venv/
 images/
 augmented_directory/
 transformed/
-# learnings/
-# learnings.zip
-# learnings.zip.part
+learnings/
+learnings.zip
+learnings.zip.part
 *.pt
 
 # Figures saved when no display is available
